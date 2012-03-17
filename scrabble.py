@@ -87,11 +87,13 @@ class Solver(object):
             while possibleSolution==True:
                 for i in range(len(string)):
                     if string.count(line[i])!=line.count(line[i]):
-                        possibleSolution==False
+                        #print line[i]
+                        possibleSolution=False
                         break
                 if possibleSolution==True:
-                    return line
+                  return line
+
 myBoard=Board()
 mySolver=Solver()
-print mySolver.solveAnagram("OOOZ")
+print mySolver.solveAnagram("OOZ")
 
