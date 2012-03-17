@@ -8,7 +8,7 @@ class Board(object):
 
     def __init__(self):
         '''Board initialised here.'''
-        self.board=[["0 " for col in range(15)] for row in range(15)]
+        self.board=[["0" for col in range(15)] for row in range(15)]
         #Add special tiles
         self.board[0][3]="3W"
         self.board[3][0]="3W"
@@ -37,7 +37,7 @@ class Board(object):
             i=0
         #add remainders
         self.board[7][3]="2W"
-        self.board[7][7]="* "
+        self.board[7][7]="*"
         self.board[7][11]="2W"
         self.board[3][7]="2W"
         self.board[11][7]="2W"
@@ -69,6 +69,29 @@ class Letters(object):
     def updateLetters(self, letters):
         self.letters=letters
 
+class Solver(object):
+    '''This class contains the solving algorithms.'''
+
+    def __init__(self):
+        f = open('./wordlist.txt', 'r')
+        self.wordlist=f.read().split("\n")
+        f.close()
+        
+    def solveAnagram(self, string):
+        for line in self.wordlist:
+            possibleSolution=True
+            #line=line.replace("\n", "")
+            #print line
+            if len(line)!=len(string):
+                possibleSolution=False
+            while possibleSolution==True:
+                for i in range(len(string)):
+                    if string.count(line[i])!=line.count(line[i]):
+                        possibleSolution==False
+                        break
+                if possibleSolution==True:
+                    return line
 myBoard=Board()
-myBoard.printBoard()
-myBoard.updateBoard([5,0], 'h', "board")
+mySolver=Solver()
+print mySolver.solveAnagram("OOOZ")
+
