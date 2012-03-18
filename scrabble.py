@@ -1,7 +1,13 @@
 ''' General algorithm: Scan left to right.
     Take substrings on board. Find all anagrams of available letters and all substrings.
     Find which of these are possible (how?)
-    Place these tiles on board. Score the placement, taking in to account vertical words made as well. '''
+    Place these tiles on board. Score the placement, taking in to account vertical words made as well.
+
+    TODO:
+    Rastering algorithm.
+    Blank tiles.
+    Bridging words.
+    '''
 
 class Board(object):
     '''This class holds the current board. Boards are 15x15'''
@@ -76,24 +82,66 @@ class Solver(object):
         f = open('./wordlist.txt', 'r')
         self.wordlist=f.read().split("\n")
         f.close()
+        self.letterValues={"A":1, "B":4, "C":4, "D":2, "E":1, "F":4, "G":3, "H":3, "I":1, "J":10, "K":5, "L":2, "M":4, "N":2, "O":1, "P":4, "Q":10, "R":1, "S":1, "T":1, "U":2, "V":5, "W":4, "X":8, "Y":3, "Z":10, "*":0}
         
     def solveAnagram(self, string):
+        ''' This method solves basic anagrams from string to wordlist.
+            This will be used to take the substrings and return possible words to play. '''
+        
         for line in self.wordlist:
             possibleSolution=True
-            #line=line.replace("\n", "")
-            #print line
             if len(line)!=len(string):
                 possibleSolution=False
             while possibleSolution==True:
                 for i in range(len(string)):
                     if string.count(line[i])!=line.count(line[i]):
-                        #print line[i]
                         possibleSolution=False
                         break
                 if possibleSolution==True:
                   return line
 
+    def scoreWord(self, Board, position, direction, word):
+        ''' This method scores the one word play given. Perhaps bridged words should be scored separately, as they are in the rules, to avoid complication.
+            This may complicate finding the bridge words though. Remember 35 point bonus if all 7 tiles used has not been applied here.'''
+        tripleWord=0
+        doubleWord=0
+        score=0
+        xpos=position[1]
+        ypos=position[0]
+        for i in range (len(word)):
+            if direction=="h":
+                if Board.board[ypos][xpos+i]=="3W":
+                    tripleWord+=1
+                    score+=self.letterValues[word[i]]
+                elif Board.board[ypos][xpos+i]=="2W":
+                    doubleWord+=1
+                    score+=self.letterValues[word[i]]
+                elif Board.board[ypos][xpos+i]=="2L":
+                    score+=2*self.letterValues[word[i]]
+                elif Board.board[ypos][xpos+i]=="3L":
+                    score+=3*self.letterValues[word[i]]
+                else :
+                    score+=self.letterValues[word[i]]
+            if direction=="v":
+                if Board.board[ypos+i][xpos]=="3W":
+                    tripleWord+=1
+                    score+=self.letterValues[word[i]]
+                elif Board.board[ypos+i][xpos]=="2W":
+                    doubleWord+=1
+                    score+=self.letterValues[word[i]]
+                elif Board.board[ypos+i][xpos]=="2L":
+                    score+=2*self.letterValues[word[i]]
+                elif Board.board[ypos+i][xpos]=="3L":
+                    score+=3*self.letterValues[word[i]]
+                else :
+                    score+=self.letterValues[word[i]]
+        if doubleWord!=0:
+            score=score*2*doubleWord
+        if tripleWord!=0:
+            score=score*3*tripleWord
+        return score
+
 myBoard=Board()
 mySolver=Solver()
-print mySolver.solveAnagram("OOZ")
+print mySolver.scoreWord(myBoard, [7,3], "v", "DAW")
 
