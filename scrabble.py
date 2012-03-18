@@ -7,7 +7,15 @@
     Rastering algorithm.
     Blank tiles.
     Bridging words.
+    Hooks.
+    35 point bonus if all 7 tiles used.
+
+    Algorithm: Scan across find all substrings, use these as letters and check for *substring* in wordlist for each substring
+    Then drop returned words that we do not have additional letters for
+    Then check words can be played (i.e. check position is empty or equal to the character being placed)
+    
     '''
+import re
 
 class Board(object):
     '''This class holds the current board. Boards are 15x15'''
@@ -140,8 +148,23 @@ class Solver(object):
         if tripleWord!=0:
             score=score*3*tripleWord
         return score
+        
+    def possibleWordlist(self, substring):
+        mergedList='\n'.join(str(item) for item in self.wordlist)
+        return possibleList=re.findall(".*"+substring+r"+.*", mergedList)
+
+    def checkWordplay(self, boardString, Letters):
+        
+    def boardScan(self, Board):
+        ''' This method will do the board scan.
+            Hooking will be dealt with by a special vertical scan in the case of 1 letter plays.'''
+        #Horizontal scan
+        emptyTiles=["0", "3W", "3L", "2W", "2L"]
+        return 0
+            
 
 myBoard=Board()
+myLetters=Letters("abcdefg")
 mySolver=Solver()
-print mySolver.scoreWord(myBoard, [7,3], "v", "DAW")
+mySolver.checkWordlist(myLetters, "CO")
 
