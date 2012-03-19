@@ -134,7 +134,7 @@ class PopBoard(object):
             for j in range(0, bwHandM.size[0]):
                 if (bwHandMDat[j,i]!=0):
                     bwHandMDat[j,i]=255
-        # Debugging
+         # Debugging
         #bwHandM.show()
 
         return bwHandM
@@ -147,8 +147,9 @@ class PopBoard(object):
             for j in range(0,15):
                 cellLoc = (j*self.cellD[1],i*self.cellD[0])
                 cropTo = (cellLoc[0]+self.cellD[0],cellLoc[1]+self.cellD[1])
-                cells[j][i]=board.crop(cellLoc + cropTo)
-                cells[j][i].load()
+                cells[i][j]=board.crop(cellLoc + cropTo)
+                cells[i][j]=cells[i][j].crop((6,6) + (25,30)) # Crop to remove rubbish
+                cells[i][j].load()
 
         return cells
 
@@ -162,7 +163,7 @@ class PopBoard(object):
             cellLoc = (handOffset[0] + i*self.cellDHand[0], handOffset[1])
             cropTo = (cellLoc[0]+self.cellDHand[0], cellLoc[1]+self.cellDHand[1])
             cells[i] = hand.crop(cellLoc + cropTo)
-            cells[i] = cells[i].crop((0,0)+(22,21))
+            cells[i] = cells[i].crop((0,0)+(22,21)) # Crop to remove rubbish
             cells[i].load()
         
         return cells
@@ -170,7 +171,5 @@ class PopBoard(object):
 
 # Debugging
 #pb = PopBoard()
-#cell = pb.grabHandCells()
-#for i in range(7):
-#    cell[i].show()
-#pb.contrastHand()
+#cell = pb.grabBoardCells()
+#cell[9][5].show()
