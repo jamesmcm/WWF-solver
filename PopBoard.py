@@ -2,21 +2,17 @@
 Use reference pixel to find WWF window (two pixels)
 Use vector to get from window to board and crop to board
 Use vector to get from board to hand and crop to hand
-
 Implemented multiply + contrast to pick out letters,
     ignore black/white
+Crop board into 15x15 cells, crop hand into 7 cells
 
 TODO:
-Multiply and contrast hand cropped image
-Crop board into 15x15 cells, crop hand into 7 cells
 Sum pixel values over cell, compare to known values to
      identify WL, TL (etc) and empty vs letter  
 Get all letters and pixel values (groan)
 
-DPO 00:31 19/03/2012
+DPO 20:26 19/03/2012
 '''
-
-
 
 import Image
 import ImageEnhance
@@ -36,13 +32,16 @@ class PopBoard(object):
         # Get location of the top left of the WWF window
         self.windowTopLeft = self.windowLoc(self.sshot_img)
         self.boardTL = (self.windowTopLeft[0] + self.windowToBoard[0], self.windowTopLeft[1] + self.windowToBoard[1])
+        self.handTL = (self.boardTL[0] + self.boardTLToHandTL[0], self.boardTL[1] + self.boardTLToHandTL[1])
+        self.cellD = (35,35)
+        #self.cellDHand = (23,23)
+        self.cellDHand = (38,23)
 
     def grabBoard(self, img):
         '''
         Returns (cropped) board image using translation vectors relative to reference pixel
         '''
-        #boardTL = (self.windowTopLeft[0] + self.windowToBoard[0], self.windowTopLeft[1] + self.windowToBoard[1]) Needs to be in init (?)
-        boardBR = (boardTL[0] + self.boardTLToBoardBR[0], boardTL[1] + self.boardTLToBoardBR[1])
+        boardBR = (self.boardTL[0] + self.boardTLToBoardBR[0], self.boardTL[1] + self.boardTLToBoardBR[1])
 
         board = img.crop(self.boardTL + boardBR)
 
@@ -52,10 +51,9 @@ class PopBoard(object):
         '''
         Returns (cropped) hand image using translation vectors relative to reference pixel
         '''
-        handTL = (self.boardTL[0] + self.boardTLToHandTL[0], self.boardTL[1] + self.boardTLToHandTL[1])
-        handBR = (handTL[0] + self.handTLToHandBR[0], handTL[1] + self.handTLToHandBR[1])
+        handBR = (self.handTL[0] + self.handTLToHandBR[0], self.handTL[1] + self.handTLToHandBR[1])
 
-        hand = img.crop(handTL + handBR)
+        hand = img.crop(self.handTL + handBR)
 
         return hand
 
@@ -107,6 +105,7 @@ class PopBoard(object):
                     bwBoardMDat[j,i]=255
         # Debugging
         #bwBoardM.show()
+
         return bwBoardM
 
     def contrastHand(self): # Merge these into one function....
@@ -136,27 +135,42 @@ class PopBoard(object):
                 if (bwHandMDat[j,i]!=0):
                     bwHandMDat[j,i]=255
         # Debugging
-        bwHandM.show()
+        #bwHandM.show()
+
         return bwHandM
 
     def grabBoardCells(self):
-        cellSize = (35,35)
-        cellH = (0,35)
-        cellV = (35,0)
-        cell = [["0" for col in range(15)] for row in range(15)]
-
-        board = self.contrastBoard()
+        cells = [["0" for col in range(15)] for row in range(15)]
+        board = self.contrastBoard() 
 
         for i in range(0,15):
             for j in range(0,15):
-                cellLoc= (self.boardTL[1]+i*cellH[1],self.boardTL[0]+j*cellV[0])
-                cropTo = (cellLoc[0]+cellSize[0],cellLoc[1]+cellSize[1])
-                cell[j][i]=board.crop(cellLoc+cropTo)
-                print cellLoc+cropTo
-        return cell
+                cellLoc = (j*self.cellD[1],i*self.cellD[0])
+                cropTo = (cellLoc[0]+self.cellD[0],cellLoc[1]+self.cellD[1])
+                cells[j][i]=board.crop(cellLoc + cropTo)
+                cells[j][i].load()
+
+        return cells
+
+    def grabHandCells(self):
+        # Require cellDHand, cell size is not the same as board!
+        cells = ["0" for i in range(7)]
+        hand = self.contrastHand()
+        handOffset = (9,11)
+        
+        for i in range(0,7):
+            cellLoc = (handOffset[0] + i*self.cellDHand[0], handOffset[1])
+            cropTo = (cellLoc[0]+self.cellDHand[0], cellLoc[1]+self.cellDHand[1])
+            cells[i] = hand.crop(cellLoc + cropTo)
+            cells[i] = cells[i].crop((0,0)+(22,21))
+            cells[i].load()
+        
+        return cells
+        
 
 # Debugging
-pb = PopBoard()
-#cell = pb.grabBoardCells()
-#cell[11][14].show()
-pb.contrastHand()
+#pb = PopBoard()
+#cell = pb.grabHandCells()
+#for i in range(7):
+#    cell[i].show()
+#pb.contrastHand()
