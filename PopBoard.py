@@ -7,16 +7,24 @@ Implemented multiply + contrast to pick out letters,
 Crop board into 15x15 cells, crop hand into 7 cells
 
 TODO:
-Sum pixel values over cell, compare to known values to
-     identify WL, TL (etc) and empty vs letter  
-Get all letters and pixel values (groan)
+Using:
 
-DPO 20:26 19/03/2012
+Tesseract Open Source OCR Engine v3.02 with Leptonica
+
+Write some classes
+
+DPO Sat Mar 24 00:53:43 GMT 2012
+
 '''
 
 import Image
 import ImageEnhance
 import ImageChops
+
+import StringIO
+import subprocess
+import sys
+import os
 
 class PopBoard(object):
 
@@ -82,10 +90,9 @@ class PopBoard(object):
         
         bwBoard=board.convert("L")
         bwBoardI=ImageChops.invert(bwBoard)
-
         # Multiply board image with inverted image so that text is black
 
-        bwBoardM = ImageChops.multiply(bwBoard, bwBoardI)
+        bwBoardM = ImageChops.multiply(bwBoardI, bwBoard)
 
         # Increase contrast
 
@@ -148,7 +155,7 @@ class PopBoard(object):
                 cellLoc = (j*self.cellD[1],i*self.cellD[0])
                 cropTo = (cellLoc[0]+self.cellD[0],cellLoc[1]+self.cellD[1])
                 cells[i][j]=board.crop(cellLoc + cropTo)
-                cells[i][j]=cells[i][j].crop((6,6) + (25,30)) # Crop to remove rubbish
+                cells[i][j]=cells[i][j].crop((3,3) + (28,32)) # Crop to remove rubbish
                 cells[i][j].load()
 
         return cells
@@ -170,6 +177,28 @@ class PopBoard(object):
         
 
 # Debugging
-#pb = PopBoard()
-#cell = pb.grabBoardCells()
-#cell[9][5].show()
+pb = PopBoard()
+cell = pb.grabBoardCells()
+
+count = [[0 for col in range(15)] for row in range(15)]
+test  = [["0" for col in range(15)] for row in range(15)]
+
+test = cell[14][6].tostring()
+size = cell[14][6].size
+img = Image.fromstring("L",size,test)
+path = 'tmp/img2'
+img.save(path+'.png')
+#command = ['tesseract img.png out -psm 10']
+# push to /dev/null to supress irritating output (each time)
+cmd = 'tesseract' + ' ' + path+'.png'  + ' '+path + ' -psm 10' +' > /dev/null' 
+#print cmd
+proc = subprocess.call(cmd, shell=True)
+f = file(path+'.txt')
+out = f.read().strip()
+print out
+
+#cleanup
+os.remove(path+'.png')
+os.remove(path+'.txt')
+
+
