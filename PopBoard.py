@@ -13,7 +13,7 @@ Tesseract Open Source OCR Engine v3.02 with Leptonica
 
 Write some classes
 
-DPO Sat Mar 24 00:53:43 GMT 2012
+DPO Sat Mar 24 01:56:21 GMT 2012
 
 '''
 
@@ -25,6 +25,7 @@ import StringIO
 import subprocess
 import sys
 import os
+import string
 
 class PopBoard(object):
 
@@ -155,7 +156,7 @@ class PopBoard(object):
                 cellLoc = (j*self.cellD[1],i*self.cellD[0])
                 cropTo = (cellLoc[0]+self.cellD[0],cellLoc[1]+self.cellD[1])
                 cells[i][j]=board.crop(cellLoc + cropTo)
-                cells[i][j]=cells[i][j].crop((3,3) + (28,32)) # Crop to remove rubbish
+                cells[i][j]=cells[i][j].crop((6,6) + (25,30)) # Crop to remove rubbish
                 cells[i][j].load()
 
         return cells
@@ -180,25 +181,36 @@ class PopBoard(object):
 pb = PopBoard()
 cell = pb.grabBoardCells()
 
-count = [[0 for col in range(15)] for row in range(15)]
-test  = [["0" for col in range(15)] for row in range(15)]
+#cell[7][6].show()
 
-test = cell[14][6].tostring()
-size = cell[14][6].size
-img = Image.fromstring("L",size,test)
-path = 'tmp/img2'
-img.save(path+'.png')
-#command = ['tesseract img.png out -psm 10']
-# push to /dev/null to supress irritating output (each time)
-cmd = 'tesseract' + ' ' + path+'.png'  + ' '+path + ' -psm 10' +' > /dev/null' 
-#print cmd
-proc = subprocess.call(cmd, shell=True)
-f = file(path+'.txt')
-out = f.read().strip()
-print out
+board  = [["-" for col in range(15)] for row in range(15)]
 
-#cleanup
-os.remove(path+'.png')
-os.remove(path+'.txt')
+path = 'tmp/img'
+
+for i in range(15):
+    for j in range(15):
+        #print i, j
+        stringI = cell[i][j].tostring()
+        sizeI = cell[i][j].size
+        img = Image.fromstring("L",sizeI,stringI)
+        img.save(path+'.png')
+
+        # push to /dev/null to suppress irritating output (each time)
+        cmd = 'tesseract' + ' ' + path+'.png'  + ' '+path + ' -psm 7' +' -l eng' + ' > /dev/null' 
+        proc = subprocess.call(cmd, shell=True)
+        f = file(path+'.txt')
+        char = f.read().strip()
+        for letter in range(len(string.uppercase)):
+            if char == string.uppercase[letter]:
+                board[i][j] = char
+
+        #cleanup
+        os.remove(path+'.png')
+        os.remove(path+'.txt')
+
+for i in range(15):
+    for j in range(15):
+        print board[i][j],
+    print '\n'
 
 
