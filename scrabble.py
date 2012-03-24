@@ -143,10 +143,12 @@ class Solver(object):
                     score+=3*self.letterValues[word[i]]
                 else :
                     score+=self.letterValues[word[i]]
+        '''AGM: Taking double and triple word tiles into account - the rules state that it doubles/triples it for each
+        special tile that is present, so if you play a 5 score word across two DW tiles you get a score of 20, not 15'''
         if doubleWord!=0:
-            score=score*2*doubleWord
+            score=score*(2**doubleWord)
         if tripleWord!=0:
-            score=score*3*tripleWord
+            score=score*(3**tripleWord)
         return score
         
     def possibleWordlist(self, substring):
