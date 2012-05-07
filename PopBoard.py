@@ -1,4 +1,24 @@
-'''
+"""
+PopBoard.py
+
+Copyright (C) 2012 Daniel O'Hanlon    
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
+"""
 Use reference pixel to find WWF window (two pixels)
 Use vector to get from window to board and crop to board
 Use vector to get from board to hand and crop to hand
@@ -6,16 +26,17 @@ Implemented multiply + contrast to pick out letters,
     ignore black/white
 Crop board into 15x15 cells, crop hand into 7 cells
 
-TODO:
+TODO: Isolate hand, split into two classes perhaps
+merge functions to minimise code repetition
+
 Using:
 
-Tesseract Open Source OCR Engine v3.02 with Leptonica
+Tesseract Open Source OCR Engine v3.02 with Leptonica:
+http://code.google.com/p/tesseract-ocr/
 
-Write some classes
+DPO Mon 7 May 2012 02:55:12 BST
 
-DPO Sat Mar 24 01:56:21 GMT 2012
-
-'''
+"""
 
 import Image
 import ImageEnhance
@@ -29,27 +50,31 @@ import string
 
 class PopBoard(object):
 
-    def __init__(self):
+    def __init__(self, path):
+
         try:
-            self.sshot_img = Image.open("WWF2.jpg")
+            self.sshot_img = Image.open(sshot_path)
         except:
-            print "Could not find image file"
+            print "Could not find image file at" + sshot_path
+
         self.boardTLToBoardBR = (525,525)
         self.boardTLToHandTL = (127,531)
         self.handTLToHandBR = (272,44)
         self.windowToBoard = (233,60)
+
         # Get location of the top left of the WWF window
         self.windowTopLeft = self.windowLoc(self.sshot_img)
+
         self.boardTL = (self.windowTopLeft[0] + self.windowToBoard[0], self.windowTopLeft[1] + self.windowToBoard[1])
         self.handTL = (self.boardTL[0] + self.boardTLToHandTL[0], self.boardTL[1] + self.boardTLToHandTL[1])
         self.cellD = (35,35)
-        #self.cellDHand = (23,23)
+
         self.cellDHand = (38,23)
 
     def grabBoard(self, img):
-        '''
+        """
         Returns (cropped) board image using translation vectors relative to reference pixel
-        '''
+        """
         boardBR = (self.boardTL[0] + self.boardTLToBoardBR[0], self.boardTL[1] + self.boardTLToBoardBR[1])
 
         board = img.crop(self.boardTL + boardBR)
@@ -57,9 +82,9 @@ class PopBoard(object):
         return board
 
     def grabHand(self, img):
-        '''
+        """
         Returns (cropped) hand image using translation vectors relative to reference pixel
-        '''
+        """
         handBR = (self.handTL[0] + self.handTLToHandBR[0], self.handTL[1] + self.handTLToHandBR[1])
 
         hand = img.crop(self.handTL + handBR)
@@ -67,10 +92,10 @@ class PopBoard(object):
         return hand
 
     def windowLoc(self, img):
-        '''
+        """
         Scans through pixels to find the reference pixel value, the top left corner
         of the WWF flash window
-        '''
+        """
 
         dat = self.sshot_img.load()
 
@@ -85,12 +110,17 @@ class PopBoard(object):
                     return loc
 
     def contrastBoard(self):
+        """
+        Provides a high contrast board image for input into Tesseract OCR
+        """
+
         board = self.grabBoard(self.sshot_img)
 
         # Convert the board image into greyscale and invert
         
         bwBoard=board.convert("L")
         bwBoardI=ImageChops.invert(bwBoard)
+
         # Multiply board image with inverted image so that text is black
 
         bwBoardM = ImageChops.multiply(bwBoardI, bwBoard)
@@ -117,6 +147,10 @@ class PopBoard(object):
         return bwBoardM
 
     def contrastHand(self): # Merge these into one function....
+        """
+        Provides a high contrast hand image for input into Tesseract OCR
+        """
+
         hand = self.grabHand(self.sshot_img)
 
         bwHand=hand.convert("L")
@@ -148,6 +182,9 @@ class PopBoard(object):
         return bwHandM
 
     def grabBoardCells(self):
+        """
+        Splits the board image into individual cell images
+        """
         cells = [["0" for col in range(15)] for row in range(15)]
         board = self.contrastBoard() 
 
@@ -162,6 +199,10 @@ class PopBoard(object):
         return cells
 
     def grabHandCells(self):
+        """
+        Splits the hand image into individual cell images
+        """
+
         # Require cellDHand, cell size is not the same as board!
         cells = ["0" for i in range(7)]
         hand = self.contrastHand()
@@ -176,41 +217,37 @@ class PopBoard(object):
         
         return cells
         
+    def getBoardLetters(self):
+        """
+        Operates on board cells using Tesseract via a system command and returns the ASCII board letters
+        """
 
-# Debugging
-pb = PopBoard()
-cell = pb.grabBoardCells()
+        cell = self.grabBoardCells()
 
-#cell[7][6].show()
+        board  = [["-" for col in range(15)] for row in range(15)]
 
-board  = [["-" for col in range(15)] for row in range(15)]
+        path = 'tmp/img'
 
-path = 'tmp/img'
+        for i in range(15):
+            for j in range(15):
+                #print i, j
+                stringI = cell[i][j].tostring()
+                sizeI = cell[i][j].size
+                img = Image.fromstring("L",sizeI,stringI)
+                img.save(path+'.png')
 
-for i in range(15):
-    for j in range(15):
-        #print i, j
-        stringI = cell[i][j].tostring()
-        sizeI = cell[i][j].size
-        img = Image.fromstring("L",sizeI,stringI)
-        img.save(path+'.png')
+                # push to /dev/null to suppress irritating output (each time!)
 
-        # push to /dev/null to suppress irritating output (each time)
-        cmd = 'tesseract' + ' ' + path+'.png'  + ' '+path + ' -psm 7' +' -l eng' + ' > /dev/null' 
-        proc = subprocess.call(cmd, shell=True)
-        f = file(path+'.txt')
-        char = f.read().strip()
-        for letter in range(len(string.uppercase)):
-            if char == string.uppercase[letter]:
-                board[i][j] = char
+                cmd = 'tesseract' + ' ' + path+'.png'  + ' '+path + ' -psm 7' +' -l eng' + ' > /dev/null' 
+                proc = subprocess.call(cmd, shell=True)
+                f = file(path+'.txt')
+                char = f.read().strip()
+                for letter in range(len(string.uppercase)):
+                    if char == string.uppercase[letter]:
+                        board[i][j] = char
 
-        #cleanup
-        os.remove(path+'.png')
-        os.remove(path+'.txt')
+                #cleanup
+                os.remove(path+'.png')
+                os.remove(path+'.txt')
 
-for i in range(15):
-    for j in range(15):
-        print board[i][j],
-    print '\n'
-
-
+        return board
