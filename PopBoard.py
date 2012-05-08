@@ -108,85 +108,50 @@ class PopBoard(object):
                         (dat[j,i] == refPixWN and dat[j+1,i]== refPixWN)):
                     loc = (j,i)
                     return loc
+        # nothing found
+        return -1
 
-    def contrastBoard(self):
+    def contrast(self, cropped_img):
         """
         Provides a high contrast board image for input into Tesseract OCR
         """
 
-        board = self.grabBoard(self.sshot_img)
-
-        # Convert the board image into greyscale and invert
+        # Convert the board image into greyscal
         
-        bwBoard=board.convert("L")
-        bwBoardI=ImageChops.invert(bwBoard)
+        bwImg=cropped_img.convert("L")
 
         # Multiply board image with inverted image so that text is black
 
-        bwBoardM = ImageChops.multiply(bwBoardI, bwBoard)
+        bwImgM = ImageChops.multiply(ImageChops.invert(bwImg), bwBoard)
 
         # Increase contrast
 
-        enh = ImageEnhance.Contrast(bwBoardM)
-        bwBoardM = enh.enhance(5.0)
+        enhancedImg = ImageEnhance.Contrast(bwImgM)
+        bwImgM = enh.enhance(5.0)
 
         # Produce pixel image object (array) for operation (operates in place)
 
-        bwBoardMDat = bwBoardM.load()
+        bwMDat = bwImgM.load()
 
         # If the pixel value is not black, make it white
         # (No colours any more, I want them to turn black)
 
-        for i in range(0, bwBoardM.size[1]):
-            for j in range(0, bwBoardM.size[0]):
-                if (bwBoardMDat[j,i]!=0):
-                    bwBoardMDat[j,i]=255
+        for i in range(0, bwImgM.size[1]):
+            for j in range(0, bwImgM.size[0]):
+                if (bwMDat[j,i]!=0):
+                    bwMDat[j,i]=255
         # Debugging
-        #bwBoardM.show()
+        #bwImgM.show()
 
         return bwBoardM
-
-    def contrastHand(self): # Merge these into one function....
-        """
-        Provides a high contrast hand image for input into Tesseract OCR
-        """
-
-        hand = self.grabHand(self.sshot_img)
-
-        bwHand=hand.convert("L")
-        bwHandI=ImageChops.invert(bwHand)
-
-        # Multiply hand image with inverted image so that text is black
-
-        bwHandM = ImageChops.multiply(bwHand, bwHandI)
-
-        # Increase contrast
-
-        enh = ImageEnhance.Contrast(bwHandM)
-        bwHandM = enh.enhance(5.0)
-
-        # Produce pixel image object (array) for operation (operates in place)
-
-        bwHandMDat = bwHandM.load()
-
-        # If the pixel value is not black, make it white
-        # (No colours any more, I want them to turn black)
-
-        for i in range(0, bwHandM.size[1]):
-            for j in range(0, bwHandM.size[0]):
-                if (bwHandMDat[j,i]!=0):
-                    bwHandMDat[j,i]=255
-         # Debugging
-        #bwHandM.show()
-
-        return bwHandM
 
     def grabBoardCells(self):
         """
         Splits the board image into individual cell images
         """
         cells = [["0" for col in range(15)] for row in range(15)]
-        board = self.contrastBoard() 
+        board = self.contrast(self.grabBoard(self.sshot_img)) 
+        # not pythonic
 
         for i in range(0,15):
             for j in range(0,15):
@@ -203,9 +168,10 @@ class PopBoard(object):
         Splits the hand image into individual cell images
         """
 
-        # Require cellDHand, cell size is not the same as board!
         cells = ["0" for i in range(7)]
-        hand = self.contrastHand()
+        hand = self.contrast(self.grabHand(self.sshot_img))
+        #not pythonic
+
         handOffset = (9,11)
         
         for i in range(0,7):
