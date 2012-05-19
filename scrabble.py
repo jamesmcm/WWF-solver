@@ -17,6 +17,7 @@
     '''
 import re
 
+
 class Board(object):
     '''This class holds the current board. Boards are 15x15'''
 
@@ -91,7 +92,7 @@ class Solver(object):
         self.wordlist=f.read().split("\n")
         f.close()
         self.letterValues={"A":1, "B":4, "C":4, "D":2, "E":1, "F":4, "G":3, "H":3, "I":1, "J":10, "K":5, "L":2, "M":4, "N":2, "O":1, "P":4, "Q":10, "R":1, "S":1, "T":1, "U":2, "V":5, "W":4, "X":8, "Y":3, "Z":10, "*":0}
-        
+        self.emptyTiles=["0", "3W", "3L", "2W", "2L", "*"]
     def solveAnagram(self, string):
         ''' This method solves basic anagrams from string to wordlist.
             This will be used to take the substrings and return possible words to play. '''
@@ -153,20 +154,82 @@ class Solver(object):
         
     def possibleWordlist(self, substring):
         mergedList='\n'.join(str(item) for item in self.wordlist)
-        return possibleList=re.findall(".*"+substring+r"+.*", mergedList)
+        possibleList=re.findall(".*"+substring+r"+.*", mergedList)
+        return possibleList
 
     def checkWordplay(self, boardString, Letters):
+        return 0
         
     def boardScan(self, Board):
         ''' This method will do the board scan.
             Hooking will be dealt with by a special vertical scan in the case of 1 letter plays.'''
         #Horizontal scan
-        emptyTiles=["0", "3W", "3L", "2W", "2L"]
+        i=0
+        j=0
+        k=0
+        while j<15:
+            while i<15:
+                if not (Board.board[j][i] in self.emptyTiles):
+                    #stop - use substrings
+                    test=self.splitRow(Board.board[j])
+                    break
+                i=i+1
+            j=j+1
+            i=0
+                    
         return 0
+                        
+    def splitRow(self, rowList):
+        ''' This method splits the list provided in to a data structure of substrings and the number of preceding blank spaces, and following blank spaces '''
+        #data structure is [N, N*[#blankpreceding, SUBSTRING, #blankfollowing]]
+        i=0
+        N=0
+        l=0
+        a=0
+        b=0
+        p=0
+        returnData=[N, []]
+        inWord=False
+        prevWord=False
+        #returnData[1].append([p, rowList[a:l],  
+        while i<15:
+            if not (rowList[i] in self.emptyTiles):
+                if inWord==False:
+                    inWord=True
+                    if prevWord==True:
+                        returnData[1].append([prevWordp, prevWordstring, i-l])
+                    N+=1
+                    a=i
+                    p=i-l
+                    
+            elif (rowList[i] in self.emptyTiles):
+                if inWord==True:
+                    inWord=False
+                    b=i
+                    l=i
+                    prevWord=True
+                    prevWordp=p
+                    prevWordstring=''.join(rowList[a:l])
+                    
+            i+=1
+        returnData[0]=N
+        if inWord==True:
             
+            returnData[1].append([p, ''.join(rowList[a:14]), 0])
+        elif inWord==False and prevWord==True:
+            returnData[1].append([p, ''.join(rowList[a:b]), 15-b])
+        print returnData
+        return returnData
+
 
 myBoard=Board()
-myLetters=Letters("abcdefg")
+myBoard.updateBoard([2,2], "h", "GIN")
+myBoard.updateBoard([2,7], "h", "BOB")
+
+myBoard.printBoard()
 mySolver=Solver()
-mySolver.checkWordlist(myLetters, "CO")
+mySolver.boardScan(myBoard)
+# myLetters=Letters("abcdefg")
+# mySolver=Solver()
+# mySolver.checkWordlist(myLetters, "CO")
 
