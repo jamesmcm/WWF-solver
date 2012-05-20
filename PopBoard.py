@@ -19,12 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 """
-Use reference pixel to find WWF window (two pixels)
-Use vector to get from window to board and crop to board
-Use vector to get from board to hand and crop to hand
+Instantiation must be performed with a path to screenshot. GetHandLetters()
+and GetBoardLetters() methods return a 1D and 2D list of each, respectively. 
+
+Tesseract is currently ~85% accurate
+
+Uses reference pixel to find WWF window (two pixels)
+Uses vector to get from window to board and crop to board
+Uses vector to get from board to hand and crop to hand
 Implemented multiply + contrast to pick out letters,
     ignore black/white
-Crop board into 15x15 cells, crop hand into 7 cells
+Crops board into 15x15 cells, crops hand into 7 cells
 
 TODO: Isolate hand, split into two classes perhaps
 merge functions to minimise code repetition
@@ -34,7 +39,7 @@ Using:
 Tesseract Open Source OCR Engine v3.02 with Leptonica:
 http://code.google.com/p/tesseract-ocr/
 
-DPO Mon 7 May 2012 02:55:12 BST
+DPO Sun 7 May 2012 02:55:12 BST
 
 """
 
@@ -50,7 +55,7 @@ import string
 
 class PopBoard(object):
 
-    def __init__(self, path):
+    def __init__(self, sshot_path):
 
         try:
             self.sshot_img = Image.open(sshot_path)
@@ -122,12 +127,12 @@ class PopBoard(object):
 
         # Multiply board image with inverted image so that text is black
 
-        bwImgM = ImageChops.multiply(ImageChops.invert(bwImg), bwBoard)
+        bwImgM = ImageChops.multiply(ImageChops.invert(bwImg), bwImg)
 
         # Increase contrast
 
         enhancedImg = ImageEnhance.Contrast(bwImgM)
-        bwImgM = enh.enhance(5.0)
+        bwImgM = enhancedImg.enhance(5.0)
 
         # Produce pixel image object (array) for operation (operates in place)
 
@@ -143,7 +148,7 @@ class PopBoard(object):
         # Debugging
         #bwImgM.show()
 
-        return bwBoardM
+        return bwImgM
 
     def grabBoardCells(self):
         """
@@ -180,7 +185,7 @@ class PopBoard(object):
             cells[i] = hand.crop(cellLoc + cropTo)
             cells[i] = cells[i].crop((0,0)+(22,21)) # Crop to remove rubbish
             cells[i].load()
-        
+
         return cells
         
     def getBoardLetters(self):
@@ -196,18 +201,19 @@ class PopBoard(object):
 
         for i in range(15):
             for j in range(15):
-                #print i, j
+
                 stringI = cell[i][j].tostring()
                 sizeI = cell[i][j].size
                 img = Image.fromstring("L",sizeI,stringI)
-                img.save(path+'.png')
+                img.save(path + '.png')
 
                 # push to /dev/null to suppress irritating output (each time!)
 
-                cmd = 'tesseract' + ' ' + path+'.png'  + ' '+path + ' -psm 7' +' -l eng' + ' > /dev/null' 
+                cmd = 'tesseract' + ' ' + path+'.png'+ ' ' +path +' -l eng' + ' -psm 7' + ' 2> /dev/null' 
                 proc = subprocess.call(cmd, shell=True)
-                f = file(path+'.txt')
+                f = file(path + '.txt')
                 char = f.read().strip()
+
                 for letter in range(len(string.uppercase)):
                     if char == string.uppercase[letter]:
                         board[i][j] = char
@@ -217,3 +223,38 @@ class PopBoard(object):
                 os.remove(path+'.txt')
 
         return board
+
+    def getHandLetters(self):
+        """
+        Operates on hand cells using Tesseract via a system command and returns the ASCII board letters
+        """
+
+        cell = self.grabHandCells()
+
+        hand  = ["-" for col in range(7)]
+
+        path = 'tmp/img'
+
+        for i in range(7):
+            stringI = cell[i].tostring()
+            sizeI = cell[i].size
+            img = Image.fromstring("L",sizeI,stringI)
+            img.save(path + '.png')
+
+            # push to /dev/null to suppress irritating output (each time!)
+
+            cmd = 'tesseract' + ' ' + path+'.png'+ ' ' +path +' -l eng' + ' -psm 7' + ' 2> /dev/null' 
+            proc = subprocess.call(cmd, shell=True)
+            f = file(path + '.txt')
+            char = f.read().strip()
+
+            for letter in range(len(string.uppercase)):
+                if char == string.uppercase[letter]:
+                    hand[i] = char
+
+            #cleanup
+            os.remove(path+'.png')
+            os.remove(path+'.txt')
+
+        return hand
+
