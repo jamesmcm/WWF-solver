@@ -155,7 +155,10 @@ class Solver(object):
     def possibleWordlist(self, substring):
         mergedList='\n'.join(str(item) for item in self.wordlist)
         possibleList=re.findall(".*"+substring+r"+.*", mergedList)
-        possibleList.remove(substring) #Don't want own substring returned
+        try:
+            possibleList.remove(substring) #Don't want own substring returned
+        except:
+            print "Initial substring not in list"
         return possibleList
 
     def checkWordplay(self, board, Letters, pos, pWord):
@@ -230,7 +233,24 @@ class Solver(object):
                                         wasPopped=True
                                         break
                                 
+                            if wasPopped==False:
+                                for z in range(len(splitpWord[1])):
+                                    # print rowsplit[1][m][3]+len(rowsplit[1][m][1])+z
+                                    if not ((Board.board[j][rowsplit[1][m][3]+len(rowsplit[1][m][1])+z] in self.emptyTiles) or (Board.board[j][rowsplit[1][m][3]+len(rowsplit[1][m][1])+z] == list(splitpWord[1])[z])):
+                                        pWordlist.pop(l)
+                                        N=len(pWordlist)
+                                        wasPopped=True
+                                        break
                                     
+                            if wasPopped==False:
+                                #Make sure we have space before next word if applicable
+                                if not (rowsplit[1][m][3]+len(rowsplit[1][m][1])+len(splitpWord[1]) -1 == 14):
+
+                                    if not (Board.board[j][rowsplit[1][m][3]+len(rowsplit[1][m][1])+len(splitpWord[1])] in self.emptyTiles):
+                                        pWordlist.pop(l)
+                                        N=len(pWordlist)
+                                        wasPopped=True
+
                             if wasPopped==False:
                                 # print pWordlist[l].split(rowsplit[1][i][1])
                                 l+=1
@@ -289,14 +309,14 @@ class Solver(object):
 
 
 myBoard=Board()
-myBoard.updateBoard([2,1], "h", "GAIN")
-myBoard.updateBoard([2,10], "h", "HATCH")
+myBoard.updateBoard([2,0], "h", "FUC")
+myBoard.updateBoard([2,4], "h", "ING")
 
 
 
 myBoard.printBoard()
 mySolver=Solver()
-myLetters=Letters("YSRAETB")
+myLetters=Letters("YKRAETB")
 mySolver.boardScan(myBoard, myLetters)
 # mySolver=Solver()
 # mySolver.checkWordlist(myLetters, "CO")
