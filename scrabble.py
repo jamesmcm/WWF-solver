@@ -155,12 +155,14 @@ class Solver(object):
     def possibleWordlist(self, substring):
         mergedList='\n'.join(str(item) for item in self.wordlist)
         possibleList=re.findall(".*"+substring+r"+.*", mergedList)
+        possibleList.remove(substring) #Don't want own substring returned
         return possibleList
 
-    def checkWordplay(self, boardString, Letters):
+    def checkWordplay(self, board, Letters, pos, pWord):
+        #Take words that could be played, check whether they can be played due to right-most stuff - i.e. do they lay perfectly on to another word or not
         return 0
         
-    def boardScan(self, Board):
+    def boardScan(self, Board, Letters):
         ''' This method will do the board scan.
             Hooking will be dealt with by a special vertical scan in the case of 1 letter plays.'''
         #Horizontal scan
@@ -171,7 +173,69 @@ class Solver(object):
             while i<15:
                 if not (Board.board[j][i] in self.emptyTiles):
                     #stop - use substrings
-                    test=self.splitRow(Board.board[j])
+                    rowsplit=self.splitRow(Board.board[j])
+                    print rowsplit
+                    for m in range(rowsplit[0]):
+                        pWordlist=self.possibleWordlist(rowsplit[1][m][1])
+                        #cut down wordlist - first on availability of letters
+                        N=len(pWordlist)
+                        l=0
+                        while l < N:
+                            wasPopped=False
+                            # for k in range(len(pWordlist[l])):
+                                #split it around substring rather than just counting letters - can check if number of letters preceding substring is LE the number of preceding blanks
+                                # if not ((pWordlist[l].count(list(pWordlist[l])[k]) == Letters.letters.count(list(pWordlist[l])[k])) or (rowsplit[1][i][1].count(list(pWordlist[l])[k]) == pWordlist[l].count(list(pWordlist[l])[k]))):
+
+                            #Handle letters before substring
+                            splitpWord=pWordlist[l].split(rowsplit[1][m][1])
+                            lettersCopy=Letters.letters
+                            if m==0:
+                                cond=(len(splitpWord[0])>rowsplit[1][m][0])
+                            else:
+                                cond=(len(splitpWord[0])+1>rowsplit[1][m][0])
+                            if cond:
+                                pWordlist.pop(l)
+                                N=len(pWordlist)
+                                wasPopped=True
+                            else:
+                                for k in range(len(splitpWord[0])):
+                                    if splitpWord[0].count(splitpWord[0][k]) > Letters.letters.count(splitpWord[0][k]):
+                                        pWordlist.pop(l)
+                                        N=len(pWordlist)
+                                        wasPopped=True
+                                        break
+                                    else:
+                                        #remove used letters from letters copy
+                                        lettersCopy=list(lettersCopy)
+                                        lettersCopy.remove(splitpWord[0][k])
+                                        lettersCopy="".join(lettersCopy)
+                                        #This probably repeats work from above and could be streamlined through direct checks and pops
+
+                            #Handle letters after substring - here we need to accommodate the posibility of brdging with later words already played
+                            if wasPopped==False:
+                                if len(splitpWord[1])>(15-(rowsplit[1][m][3]+len(rowsplit[1][m][1]))):
+                                    pWordlist.pop(l)
+                                    N=len(pWordlist)
+                                    wasPopped=True
+                                    
+                            if wasPopped==False:
+                                allLetters=lettersCopy
+                                for p in range(1,rowsplit[0]-m): #taking subsequent words only
+                                    allLetters+=rowsplit[1][p][1]
+                                # print allLetters
+                                for h in range(len(splitpWord[1])):
+                                    if splitpWord[1].count(splitpWord[1][h]) > allLetters.count(splitpWord[1][h]):
+                                        pWordlist.pop(l)
+                                        N=len(pWordlist)
+                                        wasPopped=True
+                                        break
+                                
+                                    
+                            if wasPopped==False:
+                                # print pWordlist[l].split(rowsplit[1][i][1])
+                                l+=1
+                        print pWordlist
+                        #This now works, but there is no check on whether words will fit to the right, this will be done in checkWordplay function
                     break
                 i=i+1
             j=j+1
@@ -181,7 +245,7 @@ class Solver(object):
                         
     def splitRow(self, rowList):
         ''' This method splits the list provided in to a data structure of substrings and the number of preceding blank spaces, and following blank spaces '''
-        #data structure is [N, N*[#blankpreceding, SUBSTRING, #blankfollowing]]
+        #data structure is [N, N*[#blankpreceding, SUBSTRING, #blankfollowing, pos]]
         i=0
         N=0
         l=0
@@ -197,10 +261,11 @@ class Solver(object):
                 if inWord==False:
                     inWord=True
                     if prevWord==True:
-                        returnData[1].append([prevWordp, prevWordstring, i-l])
+                        returnData[1].append([prevWordp, prevWordstring, i-l, prevWordpos])
                     N+=1
                     a=i
                     p=i-l
+                    pos=i
                     
             elif (rowList[i] in self.emptyTiles):
                 if inWord==True:
@@ -210,26 +275,29 @@ class Solver(object):
                     prevWord=True
                     prevWordp=p
                     prevWordstring=''.join(rowList[a:l])
+                    prevWordpos=pos
                     
             i+=1
         returnData[0]=N
         if inWord==True:
             
-            returnData[1].append([p, ''.join(rowList[a:14]), 0])
+            returnData[1].append([p, ''.join(rowList[a:15]), 0, pos])
         elif inWord==False and prevWord==True:
-            returnData[1].append([p, ''.join(rowList[a:b]), 15-b])
-        print returnData
+            returnData[1].append([p, ''.join(rowList[a:b]), 15-b, prevWordpos])
+        # print returnData
         return returnData
 
 
 myBoard=Board()
-myBoard.updateBoard([2,2], "h", "GIN")
-myBoard.updateBoard([2,7], "h", "BOB")
+myBoard.updateBoard([2,1], "h", "GAIN")
+myBoard.updateBoard([2,10], "h", "HATCH")
+
+
 
 myBoard.printBoard()
 mySolver=Solver()
-mySolver.boardScan(myBoard)
-# myLetters=Letters("abcdefg")
+myLetters=Letters("YSRAETB")
+mySolver.boardScan(myBoard, myLetters)
 # mySolver=Solver()
 # mySolver.checkWordlist(myLetters, "CO")
 
