@@ -46,6 +46,8 @@ DPO Sun 7 May 2012 02:55:12 BST
 import Image
 import ImageEnhance
 import ImageChops
+import ImageOps
+import ImageFilter
 
 import StringIO
 import subprocess
@@ -163,7 +165,8 @@ class PopBoard(object):
                 cellLoc = (j*self.cellD[1],i*self.cellD[0])
                 cropTo = (cellLoc[0]+self.cellD[0],cellLoc[1]+self.cellD[1])
                 cells[i][j]=board.crop(cellLoc + cropTo)
-                cells[i][j]=cells[i][j].crop((6,6) + (25,30)) # Crop to remove rubbish
+                cells[i][j]=cells[i][j].crop((4,4) + (23,28)) # Crop to remove rubbish
+                cells[i][j]=ImageOps.expand(cells[i][j], border=5, fill=255)
                 cells[i][j].load()
 
         return cells
@@ -214,6 +217,13 @@ class PopBoard(object):
                 f = file(path + '.txt')
                 char = f.read().strip()
 
+                # HACK: B and P fairly stably mis-identified as '/' and '.'
+
+                if char == "/":
+                    char = "B"
+                elif char == ".":
+                    char = "P"
+
                 for letter in range(len(string.uppercase)):
                     if char == string.uppercase[letter]:
                         board[i][j] = char
@@ -243,10 +253,17 @@ class PopBoard(object):
 
             # push to /dev/null to suppress irritating output (each time!)
 
-            cmd = 'tesseract' + ' ' + path+'.png'+ ' ' +path +' -l eng' + ' -psm 7' + ' 2> /dev/null' 
+            cmd = 'tesseract' + ' ' + path+'.png'+ ' ' +path + ' -psm 10' + ' &> /dev/null' 
             proc = subprocess.call(cmd, shell=True)
             f = file(path + '.txt')
             char = f.read().strip()
+
+            # HACK: B and P fairly stably mis-identified as '/' and '.'
+
+            if char == "/":
+                char = "B"
+            elif char == ".":
+                char = "P"
 
             for letter in range(len(string.uppercase)):
                 if char == string.uppercase[letter]:
@@ -257,4 +274,18 @@ class PopBoard(object):
             os.remove(path+'.txt')
 
         return hand
+
+pb = PopBoard("sshot.jpg")
+board = pb.getBoardLetters()
+hand = pb.getHandLetters()
+
+for i in range(15):
+    for j in range(15):
+        print board[i][j],
+    print '\n'
+
+for i in range(7):
+    print hand[i],
+
+
 
