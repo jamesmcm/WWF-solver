@@ -70,9 +70,20 @@ class Board(object):
                 i+=1
 
     def printBoard(self):
+        '''Double width tiles taken into account by appending spaces to tiles
+            of single width therefore keeping the alignment intact          '''
+        
         j=0
         while j<15:
-            print ' '.join(self.board[j])
+            i=0
+            while i<15:
+                if len(self.board[j][i])==1:
+                    print self.board[j][i] + ' ',
+                else:
+                    print self.board[j][i],
+                i+=1
+            if i==15: print
+
             j+=1
 
 class Letters(object):
