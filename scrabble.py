@@ -307,17 +307,21 @@ class Solver(object):
         # print returnData
         return returnData
 
+"""
+End of function/object definitions, beginning of test/running code
+"""
 
-myBoard=Board()
-myBoard.updateBoard([2,0], "h", "FUC")
-myBoard.updateBoard([2,4], "h", "ING")
+if __name__ == "__main__":
+    myBoard=Board()
+    myBoard.updateBoard([2,0], "h", "FUC")
+    myBoard.updateBoard([2,4], "h", "ING")
 
 
 
-myBoard.printBoard()
-mySolver=Solver()
-myLetters=Letters("YKRAETB")
-mySolver.boardScan(myBoard, myLetters)
-# mySolver=Solver()
-# mySolver.checkWordlist(myLetters, "CO")
+    myBoard.printBoard()
+    mySolver=Solver()
+    myLetters=Letters("YKRAETB")
+    mySolver.boardScan(myBoard, myLetters)
+    # mySolver=Solver()
+    # mySolver.checkWordlist(myLetters, "CO")
 
