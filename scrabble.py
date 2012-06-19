@@ -71,7 +71,7 @@ class Board(object):
 
     def printBoard(self):
         '''Double width tiles taken into account by appending spaces to tiles
-            of single width therefore keeping the alignment intact          '''
+            of single width therefore keeping the alignment intact. '''
         
         j=0
         while j<15:
@@ -165,7 +165,9 @@ class Solver(object):
         
     def possibleWordlist(self, substring):
         mergedList='\n'.join(str(item) for item in self.wordlist)
+        mergedList=re.sub('\r', '', mergedList)
         possibleList=re.findall(".*"+substring+r"+.*", mergedList)
+        #import pdb; pdb.set_trace()
         try:
             possibleList.remove(substring) #Don't want own substring returned
         except:
@@ -324,8 +326,8 @@ End of function/object definitions, beginning of test/running code
 
 if __name__ == "__main__":
     myBoard=Board()
-    myBoard.updateBoard([2,0], "h", "FUC")
-    myBoard.updateBoard([2,4], "h", "ING")
+    myBoard.updateBoard([2,0], "h", "LONG")
+    #myBoard.updateBoard([2,4], "h", "ING")
 
 
 
