@@ -326,14 +326,14 @@ End of function/object definitions, beginning of test/running code
 
 if __name__ == "__main__":
     myBoard=Board()
-    myBoard.updateBoard([2,0], "h", "LONG")
-    #myBoard.updateBoard([2,4], "h", "ING")
+    myBoard.updateBoard([2,0], "h", "LON")
+    myBoard.updateBoard([2,4], "h", "ING")
 
 
 
     myBoard.printBoard()
     mySolver=Solver()
-    myLetters=Letters("YKRAETB")
+    myLetters=Letters("YKRAEGB")
     mySolver.boardScan(myBoard, myLetters)
     # mySolver=Solver()
     # mySolver.checkWordlist(myLetters, "CO")
