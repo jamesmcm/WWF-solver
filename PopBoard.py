@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 """
 PopBoard.py
 
@@ -52,6 +54,9 @@ import subprocess
 import sys
 import os
 import string
+import cPickle as pickle
+
+from Bayes import *
 
 class PopBoard(object):
 
@@ -257,4 +262,107 @@ class PopBoard(object):
             os.remove(path+'.txt')
 
         return hand
+
+    def makevec(self, cell):
+        """
+        Makes a vector for use with Bayes from a cell image. Probably belongs in a separate class(!)
+        """
+
+        xsize = cell.size[0]
+        ysize = cell.size[1]
+
+        vec1 = intvec1D(xsize)
+        vec2 = intvec2D(ysize)
+
+        letter = cell.load()
+
+        for y in range(0, ysize):
+            for x in range(0, xsize):
+                vec1[x] = letter[x,y]
+            vec2[y] = vec1
+
+        return vec2
+
+    def makelistv(self, list_lett):
+        """
+        Makes a vector for use with Bayes from a list. Probably belongs in a separate class(!)
+        """
+
+        xsize = len(list_lett)
+        ysize = len(list_lett[0])
+
+        vec1 = intvec1D(xsize)
+        vec2 = intvec2D(ysize)
+
+        for y in range(0, ysize):
+            for x in range(0, xsize):
+                vec1[x] = list_lett[x][y]
+            vec2[y] = vec1
+
+        return vec2
+
+    def makelist(self, cell):
+        """
+        Makes a list for use with Bayes (eventually) from a cell image. Probably belongs in a separate class(!)
+        For pickling (cannot pickle SWIG or PIL objects)
+        """
+
+        xsize = cell.size[0]
+        ysize = cell.size[1]
+
+        list_lett  = [[0 for col in range(ysize)] for row in range(xsize)]
+
+        letter = cell.load()
+
+        for y in range(0, ysize):
+            for x in range(0, xsize):
+                list_lett[x][y] = letter[x,y]
+
+        return list_lett
+
+
+if __name__ == "__main__":
+
+    board = PopBoard("sshot.jpg")
+    cell = board.grabBoardCells()
+
+    pickle.dump(board.makelist(cell[7][7]), open("I.p", "wb"))
+    pickle.dump(board.makelist(cell[7][8]), open("B.p", "wb"))
+    pickle.dump(board.makelist(cell[7][10]), open("S.p", "wb"))
+    pickle.dump(board.makelist(cell[7][11]), open("E.p", "wb"))
+
+    I = board.makelistv(pickle.load(open("I.p", "rb")))
+    B = board.makelistv(pickle.load(open("B.p", "rb")))
+    S = board.makelistv(pickle.load(open("S.p", "rb")))
+    E = board.makelistv(pickle.load(open("E.p", "rb")))
+
+    I_lett = Letter(I)
+    B_lett = Letter(B)
+    S_lett = Letter(S)
+    E_lett = Letter(E)
+
+    S_ulett = LetterUnknown(S)
+
+    b = Bayes(cell[7][7].size[0], cell[7][7].size[1], S_ulett)
+
+    b.insert_letter("I", I_lett)
+    b.insert_letter("B", B_lett)
+    b.insert_letter("S", S_lett)
+    b.insert_letter("E", E_lett)
+
+    b.alphabet_total()
+
+    print 'I', b.likelihood("I")
+    print 'B', b.likelihood("B")
+    print 'S', b.likelihood("S")
+    print 'E', b.likelihood("E")
+
+    print b.most_likely()
+
+
+
+
+
+
+
 
