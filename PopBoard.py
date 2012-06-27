@@ -326,36 +326,61 @@ if __name__ == "__main__":
     board = PopBoard("sshot.jpg")
     cell = board.grabBoardCells()
 
-    pickle.dump(board.makelist(cell[7][7]), open("I.p", "wb"))
-    pickle.dump(board.makelist(cell[7][8]), open("B.p", "wb"))
-    pickle.dump(board.makelist(cell[7][10]), open("S.p", "wb"))
-    pickle.dump(board.makelist(cell[7][11]), open("E.p", "wb"))
+    # board2 = PopBoard("sshot2.jpg")
+    # cell2 = board2.grabBoardCells()
 
-    I = board.makelistv(pickle.load(open("I.p", "rb")))
-    B = board.makelistv(pickle.load(open("B.p", "rb")))
-    S = board.makelistv(pickle.load(open("S.p", "rb")))
-    E = board.makelistv(pickle.load(open("E.p", "rb")))
+    # pickle.dump(board.makelist(cell[3][3]), open("A.p", "wb"))
+    # pickle.dump(board.makelist(cell[7][8]), open("B.p", "wb"))
+    # pickle.dump(board.makelist(cell[3][4]), open("C.p", "wb"))
+    # pickle.dump(board.makelist(cell[3][6]), open("D.p", "wb"))
+    # pickle.dump(board.makelist(cell[7][11]), open("E.p", "wb"))
+    # pickle.dump(board2.makelist(cell[3][10]), open("F.p", "wb")) #####
+    # pickle.dump(board.makelist(cell[9][9]), open("G.p", "wb"))
+    # pickle.dump(board2.makelist(cell[5][14]), open("H.p", "wb")) #####
+    # pickle.dump(board.makelist(cell[7][7]), open("I.p", "wb"))
+    # pickle.dump(board2.makelist(cell[13][5]), open("J.p", "wb")) #####
+    # pickle.dump(board2.makelist(cell[2][4]), open("K.p", "wb")) #####
+    # pickle.dump(board.makelist(cell[1][11]), open("L.p", "wb"))
+    # pickle.dump(board.makelist(cell[3][14]), open("M.p", "wb"))
+    # pickle.dump(board.makelist(cell[14][3]), open("N.p", "wb"))
+    # pickle.dump(board.makelist(cell[1][10]), open("O.p", "wb"))
+    # pickle.dump(board.makelist(cell[3][2]), open("P.p", "wb"))
+    # pickle.dump(board2.makelist(cell[5][9]), open("Q.p", "wb")) #####
+    # pickle.dump(board.makelist(cell[14][5]), open("R.p", "wb"))
+    # pickle.dump(board.makelist(cell[7][10]), open("S.p", "wb"))
+    # pickle.dump(board.makelist(cell[1][12]), open("T.p", "wb"))
+    # pickle.dump(board.makelist(cell[5][8]), open("U.p", "wb"))
+    # pickle.dump(board.makelist(cell[1][9]), open("V.p", "wb"))
+    # pickle.dump(board.makelist(cell[9][5]), open("W.p", "wb"))
+    # pickle.dump(board.makelist(cell[4][10]), open("X.p", "wb"))
+    # pickle.dump(board.makelist(cell[6][6]), open("Y.p", "wb"))
+    # pickle.dump(board.makelist(cell[8][14]), open("Z.p", "wb"))
 
-    I_lett = Letter(I)
-    B_lett = Letter(B)
-    S_lett = Letter(S)
-    E_lett = Letter(E)
+    alphabet = dict.fromkeys(string.ascii_uppercase, 0)
+    letters = dict.fromkeys(string.ascii_uppercase, 0)
 
-    S_ulett = LetterUnknown(S)
+    for key in alphabet:
+        alphabet[key] = board.makelistv(pickle.load(open("etc/" + key + ".p", "rb")))
+        letters[key] = Letter(alphabet[key])
 
-    b = Bayes(cell[7][7].size[0], cell[7][7].size[1], S_ulett)
+    # I_lett = Letter(alphabet["I"])
+    # B_lett = Letter(alphabet["B"])
+    # S_lett = Letter(alphabet["S"])
+    # E_lett = Letter(alphabet["E"])
 
-    b.insert_letter("I", I_lett)
-    b.insert_letter("B", B_lett)
-    b.insert_letter("S", S_lett)
-    b.insert_letter("E", E_lett)
+    Ulett = LetterUnknown(alphabet["A"])
+
+    b = Bayes(cell[7][7].size[0], cell[7][7].size[1], Ulett)
+
+    for key in letters:
+        b.insert_letter(key, letters[key])
+
+    # b.insert_letter("I", I_lett)
+    # b.insert_letter("B", B_lett)
+    # b.insert_letter("S", S_lett)
+    # b.insert_letter("E", E_lett)
 
     b.alphabet_total()
-
-    print 'I', b.likelihood("I")
-    print 'B', b.likelihood("B")
-    print 'S', b.likelihood("S")
-    print 'E', b.likelihood("E")
 
     print b.most_likely()
 
