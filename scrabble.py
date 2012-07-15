@@ -164,14 +164,15 @@ class Solver(object):
         return score
         
     def possibleWordlist(self, substring):
-        mergedList='\n'.join(str(item) for item in self.wordlist)
-        mergedList=re.sub('\r', '', mergedList)
-        possibleList=re.findall(".*"+substring+r"+.*", mergedList)
-        #import pdb; pdb.set_trace()
+        mergedList='\n'.join(str(item) for item in self.wordlist) #get all the words separated by \n
+        mergedList=re.sub('\r', '', mergedList) #remove \r characters
+        possibleList=re.findall(".*"+substring+r"+.*", mergedList) 
+        #return all words that contain the substring? what does the +r do? grr can't get to library atm..
+        #import pdb; pdb.set_trace() - debugger code
         try:
-            possibleList.remove(substring) #Don't want own substring returned
+            possibleList.remove(substring) #Don't want own substring returned (i.e. don't return the already played word)
         except:
-            print "Initial substring not in list"
+            print "Initial substring not in list" #i.e. word already played on board, isn't in dictionary?
         return possibleList
 
     def checkWordplay(self, board, Letters, pos, pWord):
@@ -185,21 +186,27 @@ class Solver(object):
         i=0
         j=0
         k=0
-        while j<15:
-            while i<15:
-                if not (Board.board[j][i] in self.emptyTiles):
+        ''' Scans across board left to right then down a row then left to right (like reading a page)
+        until it hits the first letter, it then calls splitRow to get the words on the current row
+        and their spacings'''
+        while j<15: #row number (y co-ordinate)
+            while i<15: #column number (x co-ordinate)
+                if not (Board.board[j][i] in self.emptyTiles): #if (letter) then...
                     #stop - use substrings
-                    rowsplit=self.splitRow(Board.board[j])
+                    rowsplit=self.splitRow(Board.board[j]) #get words on row
                     print rowsplit
                     for m in range(rowsplit[0]):
                         pWordlist=self.possibleWordlist(rowsplit[1][m][1])
+                        #calls possibleWordList on each word to find possible words that can be formed
+                        #based on that word
                         #cut down wordlist - first on availability of letters
-                        N=len(pWordlist)
+                        N=len(pWordlist) #number of possible words
                         l=0
                         while l < N:
                             wasPopped=False
                             # for k in range(len(pWordlist[l])):
                                 #split it around substring rather than just counting letters - can check if number of letters preceding substring is LE the number of preceding blanks
+''' was this ever done?? is this how it works now?? or is this how it used to work? or a future idea? '''
                                 # if not ((pWordlist[l].count(list(pWordlist[l])[k]) == Letters.letters.count(list(pWordlist[l])[k])) or (rowsplit[1][i][1].count(list(pWordlist[l])[k]) == pWordlist[l].count(list(pWordlist[l])[k]))):
 
                             #Handle letters before substring
@@ -337,6 +344,15 @@ class Solver(object):
             returnData[1].append([p, ''.join(rowList[a:b]), 15-b, prevWordpos])
         # print returnData
         return returnData
+
+    def splitColumn(self, colList):
+        ''' Analogous method to above but for columns not rows - however I believe a better implementation
+        than the above method would be to concatenate the colList into a string and then use the regular
+        expression library to extract the relevant information, the data should be returned in the same form
+        as splitRow for consistency - I will code this asap, but lack of WLAN makes it hard to look up
+        libraries'''
+        N=0 #Number of substrings (words) found
+        returnData = [N, []] #Data structure to be returned 
 
 """
 End of function/object definitions, beginning of test/running code

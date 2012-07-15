@@ -21,6 +21,12 @@ substrings separated by white space and returns the relevant information.
 Construction of a vertical scan method will require an analogous 'splitColumn'
 method.
 
+* Have commented on splitRow, and begun looking at boardScan but cannot proceed without
+internet access as I cannot look up the libraries.
+
+* Planned out a method for splitColumn that will give the same results as splitRow but hopefully
+be more elegant via using the re library - cannot code without internet.
+
 TODO:
 * As mentioned above first an analogous column method to splitRow must be constructed.
 
@@ -31,7 +37,7 @@ in the case of a single letter played vertically
 
 * Because of the requirements of hooking, and to make the code more understandable, it
 seems to be strongly advisable to break the horizontal scan and vertical scan into 2 methods,
-which are then called by the scanBoard method.
+which are then called by the boardScan method.
 
 * Finally the splitRow method should probably be improved upon to make it clearer via
 additional comments and refactoring to explain what is going on, this would also make the
@@ -41,7 +47,8 @@ construction of the analogous column method far easier.
 recommend that once such a solver is complete the python debugger/profiler is used to check
 for bottlenecks and any obvious optimisation is conducted
 
-* The scoring function also needs to be written although that shouldn't be too difficult?
+* The scoring function also needs to be written (this looks like it might already be done...
+is it finished??) although that shouldn't be too difficult?
 Just remember the special cases like the 35 point bonus for using all the letters, and
 the special tiles etc., we also need to handle blank tiles which is a difficulty...
 
