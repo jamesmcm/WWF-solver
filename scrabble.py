@@ -268,7 +268,8 @@ class Solver(object):
                                 # print pWordlist[l].split(rowsplit[1][i][1])
                                 l+=1
                         print pWordlist
-                        #This now works, but there is no check on whether words will fit to the right, this will be done in checkWordplay function
+                        #This now works, but there is no check on whether words will fit to the right
+                        #this will be done in checkWordplay function
                     break
                 i=i+1
             j=j+1
@@ -278,44 +279,61 @@ class Solver(object):
                         
     def splitRow(self, rowList):
         ''' This method splits the list provided in to a data structure of substrings and the number of preceding blank spaces, and following blank spaces '''
-        #data structure is [N, N*[#blankpreceding, SUBSTRING, #blankfollowing, pos]]
-        i=0
-        N=0
-        l=0
-        a=0
-        b=0
-        p=0
-        returnData=[N, []]
-        inWord=False
-        prevWord=False
-        #returnData[1].append([p, rowList[a:l],  
+        '''data structure is:
+        [N, [#blankpreceding, SUBSTRING1, #blankfollowing, position],
+            [#blankpreceding, SUBSTRING2, #blankfollowing, position],
+        ...,[#blankpreceding, SUBSTRINGN, #blankfollowing, position]]'''
+        # where N is the number of substrings found 
+        i=0 #iterates across row
+        N=0 #Number of substrings found
+        l=0 # the position of the end of the previous word? always seems to be equal to b??
+        a=0 # the position of the most recently encountered start of a word 
+        b=0 # the position of the most recently encountered end of a word
+        p=0 # the number of preceding empty tiles
+        returnData=[N, []] #Data structure to be returned
+        inWord=False #Flag which declares whether the cursor is currently in a word or on empty tile
+        prevWord=False #Flag which declares whether a word has previously been encountered on the row
+
+        #returnData[1].append([p, rowList[a:l],   umm... wtf was this? It isn't even complete?  
+
         while i<15:
-            if not (rowList[i] in self.emptyTiles):
+            if not (rowList[i] in self.emptyTiles): # equivalent to if(letter)
                 if inWord==False:
-                    inWord=True
+                    inWord=True #we are now in a word so if this is the start of a word the flag must be set
                     if prevWord==True:
                         returnData[1].append([prevWordp, prevWordstring, i-l, prevWordpos])
-                    N+=1
-                    a=i
-                    p=i-l
-                    pos=i
+                        #we are now in a word, so we know how many spaces come after the previous word
+                        #therefore we now have sufficient information to return the previous word to
+                        #the data structure - obviously this requires that there was a previous word
+                        #thus the flag check
+                    N+=1 #increase substring (word) count by one
+                    a=i # set a to be the start of the new word
+                    p=i-l # calculate number of preceding empty tiles of new word
+                    pos=i # set pos to be start of the word
                     
-            elif (rowList[i] in self.emptyTiles):
+            elif (rowList[i] in self.emptyTiles): #if we are on an empty tile
                 if inWord==True:
-                    inWord=False
+                    inWord=False #check if we have left a word and update flag
                     b=i
-                    l=i
-                    prevWord=True
-                    prevWordp=p
-                    prevWordstring=''.join(rowList[a:l])
-                    prevWordpos=pos
+                    l=i #set b and l to the position of the first space after the word
+                    prevWord=True #we just left a word so now there is obv. a previous word in existence
+                    prevWordp=p #set the number of preceding empty tiles of the previous word
+                    #this doesn't actually seem necessary as the previous word data is pushed PRIOR
+                    #to setting the new p value so it is redundant, but safer I guess?
+                    prevWordstring=''.join(rowList[a:l]) 
+                    '''grabs previous word - python doesn't include the 2nd index so it doesn't
+                    grab the space,i.e. a noob would guess it'd be a:(l-1), python also counts from zero'''
+                    prevWordpos=pos #grabs previous word position
                     
             i+=1
-        returnData[0]=N
+        returnData[0]=N #after scan is complete puts total word count as first bit of data returned
         if inWord==True:
-            
+            #if we have reached the end of the board and are still in a word, then there are no
+            #spaces following that word, and the word ends at the end of the row
             returnData[1].append([p, ''.join(rowList[a:15]), 0, pos])
         elif inWord==False and prevWord==True:
+            #if we have reached the end and are not in a word, then the previous word (assuming one exists)
+            #has spaces following it up until the end of the board
             returnData[1].append([p, ''.join(rowList[a:b]), 15-b, prevWordpos])
         # print returnData
         return returnData
