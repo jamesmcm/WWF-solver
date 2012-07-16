@@ -1,14 +1,15 @@
 Scrabble solver, written in Python with OOP
+-------------------------------------------
 
 Letter distribution:
-A=9	D=5	G=3	J=1	M=2	P=2	S=5	V=2	Y=2
-B=2	E=13	H=4	K=1	N=5	Q=1	T=7	W=2	Z=1
-C=2	F=2	I=8	L=4	O=8	R=6	U=4	X=1	*=2
+	A=9	D=5	G=3	J=1	M=2	P=2	S=5	V=2	Y=2
+	B=2	E=13	H=4	K=1	N=5	Q=1	T=7	W=2	Z=1
+	C=2	F=2	I=8	L=4	O=8	R=6	U=4	X=1	*=2
 
 Letter values:
-A=1	D=2	G=3	J=10	M=4	P=4	S=1	V=5	Y=3
-B=4	E=1	H=3	K=5	N=2	Q=10	T=1	W=4	Z=10
-C=4	F=4	I=1	L=2	O=1	R=1	U=2	X=8	*=0
+	A=1	D=2	G=3	J=10	M=4	P=4	S=1	V=5	Y=3
+	B=4	E=1	H=3	K=5	N=2	Q=10	T=1	W=4	Z=10
+	C=4	F=4	I=1	L=2	O=1	R=1	U=2	X=8	*=0
 
 DONE:
 * Horizontal scan , without hooking - i.e. where you play one letter
