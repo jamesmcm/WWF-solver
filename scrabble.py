@@ -167,7 +167,7 @@ class Solver(object):
         mergedList='\n'.join(str(item) for item in self.wordlist) #get all the words separated by \n
         mergedList=re.sub('\r', '', mergedList) #remove \r characters
         possibleList=re.findall(".*"+substring+r"+.*", mergedList) 
-        #return all words that contain the substring? what does the +r do? grr can't get to library atm..
+        #return all words that contain the substring,r denotes rawstring
         #import pdb; pdb.set_trace() - debugger code
         try:
             possibleList.remove(substring) #Don't want own substring returned (i.e. don't return the already played word)
@@ -211,6 +211,7 @@ class Solver(object):
 
                             #Handle letters before substring
                             splitpWord=pWordlist[l].split(rowsplit[1][m][1])
+#split the possible words about the substring (already played word)
                             lettersCopy=Letters.letters
                             if m==0:
                                 cond=(len(splitpWord[0])>rowsplit[1][m][0])
@@ -352,7 +353,13 @@ class Solver(object):
         as splitRow for consistency - I will code this asap, but lack of WLAN makes it hard to look up
         libraries'''
         N=0 #Number of substrings (words) found
-        returnData = [N, []] #Data structure to be returned 
+        returnData = [N, []] #Data structure to be returned
+        #In order to allow this to be successful first must replace all item in emptyTiles with spaces
+        for item in colList:
+            if item in self.emptyTiles:
+                item = " "
+        #need to check for letters and split then calculate values
+        
 
 """
 End of function/object definitions, beginning of test/running code
